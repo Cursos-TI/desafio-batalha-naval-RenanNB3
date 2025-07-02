@@ -1,19 +1,46 @@
 #include <stdio.h>
+#include <stdbool.h>
 
-// Desafio Batalha Naval - MateCheck
-// Este código inicial serve como base para o desenvolvimento do sistema de Batalha Naval.
-// Siga os comentários para implementar cada parte do desafio.
+#define TAMANHO_TABULEIRO 10
+#define TAMANHO_NAVIO 3
+
+// Verifica se é possível posicionar o navio
+bool podePosicionar(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna, int direcao, bool diagonal) {
+    for (int i = 0; i < TAMANHO_NAVIO; i++) {
+        int l = linha + (diagonal ? i * direcao : (direcao == 1 ? i : 0));
+        int c = coluna + (diagonal ? i * direcao : (direcao == 0 ? i : 0));
+
+        if (l < 0 || l >= TAMANHO_TABULEIRO || c < 0 || c >= TAMANHO_TABULEIRO) return false;
+        if (tabuleiro[l][c] != 0) return false;
+    }
+    return true;
+}
+
+// Posicionando o navio no tabuleiro
+void posicionarNavio(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna, int direcao, bool diagonal) {
+    for (int i = 0; i < TAMANHO_NAVIO; i++) {
+        int l = linha + (diagonal ? i * direcao : (direcao == 1 ? i : 0));
+        int c = coluna + (diagonal ? i * direcao : (direcao == 0 ? i : 0));
+        tabuleiro[l][c] = 3;
+    }
+}
+
+// Mostrando o tabuleiro
+void mostrarTabuleiro(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO]) {
+    printf("Tabuleiro Batalha Naval (0 = Água, 3 = Navio):\n\n");
+    for (int i = 0; i < TAMANHO_TABULEIRO; i++) {
+        for (int j = 0; j < TAMANHO_TABULEIRO; j++) {
+            printf("%d ", tabuleiro[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
 
 int main() {
-    // Nível Novato - Posicionamento dos Navios
-
-    // Definindo o tamanho dos arrays
-    #define TAMANHO_TABULEIRO 10
-    #define TAMANHO_NAVIO 3
-    
     int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO] = {0};
-
-    // Definindo o tamanho dos Navios
+    // Nível Novato - Posicionamento dos Navios
+    // Tamanho dos Navios
     int navio1[TAMANHO_NAVIO] = {3, 3, 3}; 
     int navio2[TAMANHO_NAVIO] = {3, 3, 3};
 
@@ -32,41 +59,24 @@ int main() {
     for (int i = 0; i < TAMANHO_NAVIO; i++) {
         tabuleiro[linhaNavio2 + i][colunaNavio2] = navio2[i];
     }
+    mostrarTabuleiro(tabuleiro);
 
-    // Mostrando Tabuleiro
-    printf("Tabuleiro Batalha Naval (0 = Água, 3 = Navio):\n\n");
-    for (int i = 0; i < TAMANHO_TABULEIRO; i++) {
-        for (int j = 0; j < TAMANHO_TABULEIRO; j++) {
-            printf("%d ", tabuleiro[i][j]);
-        }
-        printf("\n");
+    // Nível Aventureiro - Posicionamento Diagonal
+
+    // Navio 3 - Diagonal Principal
+    int linha3 = 0, coluna3 = 0;
+    if (podePosicionar(tabuleiro, linha3, coluna3, 1, true)) {
+        posicionarNavio(tabuleiro, linha3, coluna3, 1, true);
     }
 
-    // Nível Aventureiro - Expansão do Tabuleiro e Posicionamento Diagonal
-    // Sugestão: Expanda o tabuleiro para uma matriz 10x10.
-    // Sugestão: Posicione quatro navios no tabuleiro, incluindo dois na diagonal.
-    // Sugestão: Exiba o tabuleiro completo no console, mostrando 0 para posições vazias e 3 para posições ocupadas.
+    // Navio 4 - Diagonal Secundária
+    int linha4 = 2, coluna4 = 9;
+    if (podePosicionar(tabuleiro, linha4, coluna4, -1, true)) {
+        posicionarNavio(tabuleiro, linha4, coluna4, -1, true);
+    }
 
-    // Nível Mestre - Habilidades Especiais com Matrizes
-    // Sugestão: Crie matrizes para representar habilidades especiais como cone, cruz, e octaedro.
-    // Sugestão: Utilize estruturas de repetição aninhadas para preencher as áreas afetadas por essas habilidades no tabuleiro.
-    // Sugestão: Exiba o tabuleiro com as áreas afetadas, utilizando 0 para áreas não afetadas e 1 para áreas atingidas.
-
-    // Exemplos de exibição das habilidades:
-    // Exemplo para habilidade em cone:
-    // 0 0 1 0 0
-    // 0 1 1 1 0
-    // 1 1 1 1 1
-    
-    // Exemplo para habilidade em octaedro:
-    // 0 0 1 0 0
-    // 0 1 1 1 0
-    // 0 0 1 0 0
-
-    // Exemplo para habilidade em cruz:
-    // 0 0 1 0 0
-    // 1 1 1 1 1
-    // 0 0 1 0 0
+    // Exibindo tabuleiro nível aventureiro
+    mostrarTabuleiro(tabuleiro);
 
     return 0;
 }
