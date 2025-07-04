@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h> // Para a função abs
 
 #define TAMANHO_TABULEIRO 10
 #define TAMANHO_NAVIO 3
+#define TAMANHO_HABILIDADE 3
 
 // Verifica se é possível posicionar o navio
 bool podePosicionar(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna, int direcao, bool diagonal) {
@@ -10,13 +12,15 @@ bool podePosicionar(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int lin
         int l = linha + (diagonal ? i * direcao : (direcao == 1 ? i : 0));
         int c = coluna + (diagonal ? i * direcao : (direcao == 0 ? i : 0));
 
-        if (l < 0 || l >= TAMANHO_TABULEIRO || c < 0 || c >= TAMANHO_TABULEIRO) return false;
-        if (tabuleiro[l][c] != 0) return false;
+        if (l < 0 || l >= TAMANHO_TABULEIRO || c < 0 || c >= TAMANHO_TABULEIRO)
+            return false;
+        if (tabuleiro[l][c] != 0)
+            return false;
     }
     return true;
 }
 
-// Posicionando o navio no tabuleiro
+// Posiciona o navio no tabuleiro
 void posicionarNavio(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna, int direcao, bool diagonal) {
     for (int i = 0; i < TAMANHO_NAVIO; i++) {
         int l = linha + (diagonal ? i * direcao : (direcao == 1 ? i : 0));
@@ -25,9 +29,59 @@ void posicionarNavio(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int li
     }
 }
 
-// Mostrando o tabuleiro
+// Gera uma matriz em forma de cone
+void gerarCone(int matriz[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE]) {
+    for (int i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (int j = 0; j < TAMANHO_HABILIDADE; j++) {
+            if (j >= (TAMANHO_HABILIDADE - 1) / 2 - i && j <= (TAMANHO_HABILIDADE - 1) / 2 + i)
+                matriz[i][j] = 1;
+            else
+                matriz[i][j] = 0;
+        }
+    }
+}
+
+// Gera uma matriz em forma de cruz
+void gerarCruz(int matriz[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE]) {
+    int centro = TAMANHO_HABILIDADE / 2;
+    for (int i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (int j = 0; j < TAMANHO_HABILIDADE; j++) {
+            matriz[i][j] = (i == centro || j == centro) ? 1 : 0;
+        }
+    }
+}
+
+// Gera uma matriz com forma de octaedro
+void gerarOctaedro(int matriz[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE]) {
+    int centro = TAMANHO_HABILIDADE / 2;
+    for (int i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (int j = 0; j < TAMANHO_HABILIDADE; j++) {
+            matriz[i][j] = (abs(i - centro) + abs(j - centro) <= centro) ? 1 : 0;
+        }
+    }
+}
+
+// Adiciona a habilidade ao tabuleiro
+void aplicarHabilidade(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int habilidade[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE], int origemLinha, int origemColuna) {
+    int offset = TAMANHO_HABILIDADE / 2;
+
+    for (int i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (int j = 0; j < TAMANHO_HABILIDADE; j++) {
+            int l = origemLinha - offset + i;
+            int c = origemColuna - offset + j;
+
+            if (l >= 0 && l < TAMANHO_TABULEIRO && c >= 0 && c < TAMANHO_TABULEIRO) {
+                if (habilidade[i][j] == 1 && tabuleiro[l][c] != 3) {
+                    tabuleiro[l][c] = 5;
+                }
+            }
+        }
+    }
+}
+
+// Exibe o tabuleiro no console
 void mostrarTabuleiro(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO]) {
-    printf("Tabuleiro Batalha Naval (0 = Água, 3 = Navio):\n\n");
+    printf("Tabuleiro (0=Água, 3=Navio, 5=Área atingida):\n\n");
     for (int i = 0; i < TAMANHO_TABULEIRO; i++) {
         for (int j = 0; j < TAMANHO_TABULEIRO; j++) {
             printf("%d ", tabuleiro[i][j]);
@@ -61,21 +115,27 @@ int main() {
     }
     mostrarTabuleiro(tabuleiro);
 
-    // Nível Aventureiro - Posicionamento Diagonal
+    // Nível Mestre - Gerando habilidades
+    int cone[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE];
+    int cruz[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE];
+    int octaedro[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE];
 
-    // Navio 3 - Diagonal Principal
-    int linha3 = 0, coluna3 = 0;
-    if (podePosicionar(tabuleiro, linha3, coluna3, 1, true)) {
-        posicionarNavio(tabuleiro, linha3, coluna3, 1, true);
-    }
+    gerarCone(cone);
+    gerarCruz(cruz);
+    gerarOctaedro(octaedro);
 
-    // Navio 4 - Diagonal Secundária
-    int linha4 = 2, coluna4 = 9;
-    if (podePosicionar(tabuleiro, linha4, coluna4, -1, true)) {
-        posicionarNavio(tabuleiro, linha4, coluna4, -1, true);
-    }
+    // Aplicando habilidades
 
-    // Exibindo tabuleiro nível aventureiro
+    // Cone com centro em (1,2)
+    aplicarHabilidade(tabuleiro, cone, 1, 2);
+    
+    // Cruz com centro em (5,5)
+    aplicarHabilidade(tabuleiro, cruz, 5, 5);        
+
+     // Octaedro com centro em (7,7)
+    aplicarHabilidade(tabuleiro, octaedro, 7, 7);   
+
+    // Mostrando o tabuleiro final
     mostrarTabuleiro(tabuleiro);
 
     return 0;
